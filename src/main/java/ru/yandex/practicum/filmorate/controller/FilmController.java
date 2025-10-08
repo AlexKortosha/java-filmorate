@@ -56,7 +56,7 @@ public class FilmController {
     public Film updateFilm(@RequestBody Film newFilm) {
         log.info("Попытка обновления фильма: {}", newFilm);
 
-        if(newFilm.getId() == null) {
+        if (newFilm.getId() == null) {
             log.error("Ошибка валидации: id не указан");
             throw new ValidationException("id должен быть указан");
         }
