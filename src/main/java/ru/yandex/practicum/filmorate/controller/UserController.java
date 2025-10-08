@@ -59,7 +59,7 @@ public class UserController {
     public User updateUser(@RequestBody User newUser) {
         log.info("Попытка обновить пользователя: {}", newUser);
 
-       if( newUser.getId() == null) {
+       if (newUser.getId() == null) {
            log.error("Ошибка валидации: id не указан");
            throw new ValidationException("id должен быть указан");
        }
