@@ -16,6 +16,7 @@ import java.util.Map;
 public class UserController {
 
     private final Map<Long, User> users = new HashMap<>();
+    private long currentId = 0;
 
     @GetMapping
     public Collection<User> findAll() {
@@ -28,7 +29,7 @@ public class UserController {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        user.setId(getNextId());
+        user.setId(++currentId);
         users.put(user.getId(), user);
         log.info("Пользователь успешно добавлен с id={}", user.getId());
         return user;
@@ -49,12 +50,4 @@ public class UserController {
         return newUser;
     }
 
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return  ++currentMaxId;
-    }
 }

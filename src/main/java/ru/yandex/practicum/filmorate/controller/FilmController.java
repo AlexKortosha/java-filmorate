@@ -17,6 +17,7 @@ import java.util.Map;
 public class FilmController {
 
     private final Map<Long, Film> films = new HashMap<>();
+    private long currentId = 0;
 
     private static final LocalDate FIRST_CINEMA = LocalDate.of(1895, 12, 28);
 
@@ -29,7 +30,7 @@ public class FilmController {
     @PostMapping
     public Film newFilm(@Valid @RequestBody Film film) {
         validateHistoricalDate(film);
-        film.setId(getNextId());
+        film.setId(++currentId);
         films.put(film.getId(), film);
         log.info("Фильм успешно добавлен с id={}", film.getId());
         return film;
@@ -52,15 +53,5 @@ public class FilmController {
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
     }
-
-    private long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return  ++currentMaxId;
-    }
-
 
 }
