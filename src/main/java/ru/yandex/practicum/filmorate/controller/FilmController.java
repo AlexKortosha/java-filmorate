@@ -18,6 +18,7 @@ public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
 
     private static final LocalDate FIRST_CINEMA = LocalDate.of(1895, 12, 28);
+    private static final int MAX_SYMBOLS = 200;
 
     @GetMapping
     public Collection<Film> findAll0() {
@@ -33,7 +34,7 @@ public class FilmController {
             log.error("Ошибка валидации: название фильма пустое");
             throw new ValidationException("Название не может быть пустым");
         }
-        if (film.getDescription() != null && film.getDescription().length() > 200) {
+        if (film.getDescription() != null && film.getDescription().length() > MAX_SYMBOLS) {
             log.error("Ошибка валидации: описание превышает 200 символов");
             throw new ValidationException("Максимальная длина описания — 200 символов");
         }
