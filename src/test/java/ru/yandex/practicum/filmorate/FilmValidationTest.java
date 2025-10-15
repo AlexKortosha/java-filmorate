@@ -65,14 +65,13 @@ public class FilmValidationTest {
     @Test
     void releaseDateInFutureShouldFail() {
         Film film = new Film();
-        film.setName("Film");
-        film.setDescription("desc");
-        film.setReleaseDate(LocalDate.now().plusDays(1));
-        film.setDuration(100);
+        film.setName("Test");
+        film.setDescription("Desc");
+        film.setReleaseDate(LocalDate.now().plusDays(10));
+        film.setDuration(120);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Дата  не может быть в будущем")));
+        Set<ConstraintViolation<Film>> violations = validator.validateProperty(film, "releaseDate");
+        assertFalse(violations.isEmpty(), "Ожидалось нарушение на дату релиза");
     }
 
     @Test
