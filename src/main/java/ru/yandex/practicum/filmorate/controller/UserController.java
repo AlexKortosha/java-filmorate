@@ -1,53 +1,35 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    private final Map<Long, User> users = new HashMap<>();
-    private long currentId = 0;
+    private final UserStorage userStorage;
 
     @GetMapping
     public Collection<User> findAll() {
-        log.info("Запрос списка всех пользователей (всего: {})", users.size());
-        return users.values();
+        return userStorage.findAll();
     }
 
     @PostMapping
-    public User newUser(@Valid @RequestBody User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        user.setId(++currentId);
-        users.put(user.getId(), user);
-        log.info("Пользователь успешно добавлен с id={}", user.getId());
-        return user;
-
+    public User addUser(@Valid @RequestBody User user) {
+        return userStorage.add(user);
     }
 
     @PutMapping
-    public User updateUser(@Valid @RequestBody User newUser) {
-        if (!users.containsKey(newUser.getId())) {
-            log.error("Ошибка: пользователь с id={} не найден", newUser.getId());
-            throw new ValidationException("Пользователь с таким id не найден");
-        }
-        if (newUser.getName() == null || newUser.getName().isBlank()) {
-            newUser.setName(newUser.getLogin());
-        }
-        users.put(newUser.getId(), newUser);
-        log.info("Пользователь успешно обновлён: {}", newUser);
-        return newUser;
+    public User updateUser(@Valid @RequestBody User user) {
+        return userStorage.update(user);
     }
 
 }
