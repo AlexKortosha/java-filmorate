@@ -1,4 +1,75 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Slf4j
+@RequiredArgsConstructor
+@Service
 public class UserService {
+
+    private final UserStorage userStorage;
+
+    public void addFriend(Long userId, Long friendId) {
+        User user = userStorage.getById(userId);
+        User friend = userStorage.getById(friendId);
+
+        if (user == null || friend == null) {
+            throw new ValidationException("Пользователь не найден");
+        }
+
+        user.getFriends().add(friendId);
+        friend.getFriends().add(userId);
+
+        log.info("Пользователь {} и {} теперь друзья", userId, friendId);
+    }
+
+    public void removeFriend(Long userId, Long friendId) {
+        User user = userStorage.getById(userId);
+        User friend = userStorage.getById(friendId);
+
+        if (user == null || friend == null) {
+            throw new ValidationException("Пользователь не найден");
+        }
+
+        user.getFriends().remove(friendId);
+        friend.getFriends().remove(userId);
+
+        log.info("Пользователи {} и {} больше не друзья", userId, friendId);
+    }
+
+    public List<User> getFriends(Long userId) {
+        User user = userStorage.getById(userId);
+        if (user == null) {
+            throw new ValidationException("Пользователь не найден");
+        }
+        return user.getFriends().stream()
+                .map(userStorage::getById)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    public List<User> getCommonFriends(Long userId, Long otherId) {
+        User user = userStorage.getById(userId);
+        User other = userStorage.getById(otherId);
+
+        if (user == null || other == null) {
+            throw new ValidationException("Пользователь не найден");
+        }
+
+        Set<Long> commonIds = new HashSet<>(user.getFriends());
+        commonIds.retainAll(other.getFriends());
+
+        return commonIds.stream()
+                .map(userStorage::getById)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
 }
