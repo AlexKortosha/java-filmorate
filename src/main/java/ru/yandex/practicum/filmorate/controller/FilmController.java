@@ -22,7 +22,7 @@ public class FilmController {
     private static final LocalDate FIRST_CINEMA = LocalDate.of(1895, 12, 28);
 
     @GetMapping
-    public Collection<Film> findAll0() {
+    public Collection<Film> findAll() {
         log.info("Запрос списка всех фильмов (всего: {})", films.size());
         return films.values();
     }
