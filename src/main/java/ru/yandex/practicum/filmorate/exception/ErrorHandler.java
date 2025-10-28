@@ -53,4 +53,13 @@ public class ErrorHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotFoundException(NotFoundException e) {
+        log.error("Объект не найден: {}", e.getMessage());
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Объект не найден");
+        errorResponse.put("message", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
 }

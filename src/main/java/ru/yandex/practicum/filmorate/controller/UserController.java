@@ -27,11 +27,13 @@ public class UserController {
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
+        userService.validateUser(user);
         return userStorage.add(user);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
+        userService.validateUser(user);
         return userStorage.update(user);
     }
 

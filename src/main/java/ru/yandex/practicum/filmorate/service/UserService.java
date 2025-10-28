@@ -3,10 +3,12 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,7 +24,7 @@ public class UserService {
         User friend = userStorage.getById(friendId);
 
         if (user == null || friend == null) {
-            throw new ValidationException("Пользователь не найден");
+            throw new NotFoundException("Пользователь не найден");
         }
 
         user.getFriends().add(friendId);
@@ -36,7 +38,7 @@ public class UserService {
         User friend = userStorage.getById(friendId);
 
         if (user == null || friend == null) {
-            throw new ValidationException("Пользователь не найден");
+            throw new NotFoundException("Пользователь не найден");
         }
 
         user.getFriends().remove(friendId);
@@ -48,7 +50,7 @@ public class UserService {
     public List<User> getFriends(Long userId) {
         User user = userStorage.getById(userId);
         if (user == null) {
-            throw new ValidationException("Пользователь не найден");
+            throw new NotFoundException("Пользователь не найден");
         }
         return user.getFriends().stream()
                 .map(userStorage::getById)
@@ -61,7 +63,7 @@ public class UserService {
         User other = userStorage.getById(otherId);
 
         if (user == null || other == null) {
-            throw new ValidationException("Пользователь не найден");
+            throw new NotFoundException("Пользователь не найден");
         }
 
         Set<Long> commonIds = new HashSet<>(user.getFriends());
@@ -71,5 +73,23 @@ public class UserService {
                 .map(userStorage::getById)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    public void validateUser(User user) {
+        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+            throw new ValidationException("Некорректный email");
+        }
+
+        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+            throw new ValidationException("Логин не может быть пустым и не должен содержать пробелы");
+        }
+
+        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
+            throw new ValidationException("Дата рождения не может быть в будущем");
+        }
+
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 }
