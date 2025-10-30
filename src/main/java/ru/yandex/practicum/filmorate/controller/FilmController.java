@@ -27,11 +27,13 @@ public class FilmController {
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
+        filmService.validateFilm(film);
         return filmService.addFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
+        filmService.validateFilm(film);
         return filmService.updateFilm(film);
     }
 
