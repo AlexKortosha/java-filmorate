@@ -22,19 +22,19 @@ public class UserController {
 
     @GetMapping
     public Collection<User> findAll() {
-        return userStorage.findAll();
+        return userService.findAll();
     }
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
         userService.validateUser(user);
-        return userStorage.add(user);
+        return userService.addUser(user);
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         userService.validateUser(user);
-        return userStorage.update(user);
+        return userService.updateUser(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

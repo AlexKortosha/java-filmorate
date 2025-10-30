@@ -19,6 +19,22 @@ public class UserService {
 
     private final UserStorage userStorage;
 
+    public Collection<User> findAll() {
+        return userStorage.findAll();
+    }
+
+    public User addUser(User user) {
+        validateUser(user);
+        log.info("Добавление пользователя: {}", user.getLogin());
+        return userStorage.add(user);
+    }
+
+    public User updateUser(User user) {
+        validateUser(user);
+        log.info("Обновление пользователя: {}", user.getId());
+        return userStorage.update(user);
+    }
+
     public void addFriend(Long userId, Long friendId) {
         User user = userStorage.getById(userId);
         User friend = userStorage.getById(friendId);
