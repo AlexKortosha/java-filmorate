@@ -91,7 +91,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public void validateUser(User user) {
+    private void validateUser(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             throw new ValidationException("Некорректный email");
         }
