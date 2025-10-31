@@ -68,7 +68,7 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public void validateFilm(Film film) {
+    private void validateFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             throw new ValidationException("Название не может быть пустым");
         }
