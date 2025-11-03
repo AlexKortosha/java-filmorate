@@ -49,5 +49,4 @@ public class FilmController {
     public List<Film> getMostPopular(@RequestParam(defaultValue = "10") int count) {
         return filmService.getMostPopularFilms(count);
     }
-
 }
