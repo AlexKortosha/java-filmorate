@@ -12,12 +12,4 @@ public enum FriendshipStatus {
         this.id = id;
     }
 
-    public static FriendshipStatus fromValue(int id) {
-        for (FriendshipStatus status: values()) {
-            if (status.id == id) {
-                return status;
-            }
-        }
-        throw  new IllegalArgumentException("Некорректное id");
-    }
 }
