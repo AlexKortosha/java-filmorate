@@ -19,7 +19,6 @@ class UserControllerValidationTest {
 
     @BeforeEach
     void setUp() {
-        // Простая in-memory реализация UserStorage для тестов
         UserStorage inMemoryStorage = new UserStorage() {
 
             private final Map<Long, User> users = new HashMap<>();
@@ -59,16 +58,22 @@ class UserControllerValidationTest {
             }
 
             @Override
-            public void addFriend(Long userId, Long friendId) { }
+            public void addFriend(Long userId, Long friendId) {
+
+            }
 
             @Override
             public void removeFriend(Long userId, Long friendId) { }
 
             @Override
-            public Set<Long> getUserFriends(Long userId) { return new HashSet<>(); }
+            public Set<Long> getUserFriends(Long userId) {
+                return new HashSet<>();
+            }
 
             @Override
-            public List<User> getCommonFriends(Long userId1, Long userId2) { return new ArrayList<>(); }
+            public List<User> getCommonFriends(Long userId1, Long userId2) {
+                return new ArrayList<>();
+            }
         };
 
         controller = new UserController(new UserService(inMemoryStorage));
