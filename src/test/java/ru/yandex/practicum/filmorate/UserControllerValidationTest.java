@@ -63,7 +63,9 @@ class UserControllerValidationTest {
             }
 
             @Override
-            public void removeFriend(Long userId, Long friendId) { }
+            public void removeFriend(Long userId, Long friendId) {
+                
+            }
 
             @Override
             public Set<Long> getUserFriends(Long userId) {
