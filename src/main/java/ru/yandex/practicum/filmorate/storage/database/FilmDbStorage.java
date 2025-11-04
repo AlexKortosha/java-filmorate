@@ -118,18 +118,22 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getMostPopularFilms(int count) {
+        // Загружаем все фильмы с MPA
         String sql = """
-                SELECT f.*, r.name AS rating_name, COUNT(fl.user_id) AS likes_count
-                FROM film f
-                JOIN rating r ON f.rating_id = r.rating_id
-                LEFT JOIN film_like fl ON f.film_id = fl.film_id
-                GROUP BY f.film_id, r.name
-                ORDER BY likes_count DESC
-                LIMIT ?
-                """;
-        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, count);
+            SELECT f.*, r.name AS rating_name
+            FROM film f
+            JOIN rating r ON f.rating_id = r.rating_id
+            """;
+        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm);
+
+        // Загружаем жанры и лайки для каждого фильма
         films.forEach(this::loadGenresAndLikes);
-        return films;
+
+        // Сортируем по количеству лайков по убыванию и ограничиваем количеством
+        return films.stream()
+                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
+                .limit(count)
+                .toList();
     }
 
     // --- вспомогательные методы ---
