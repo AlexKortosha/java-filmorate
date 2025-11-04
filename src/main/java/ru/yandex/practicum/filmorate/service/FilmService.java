@@ -71,7 +71,7 @@ public class FilmService {
             throw new NotFoundException("Фильм или пользователь не найден");
         }
 
-        film.getLikes().add(userId); 
+        film.getLikes().add(userId);
 
         if (filmStorage instanceof FilmDbStorage) {
             ((FilmDbStorage) filmStorage).addLike(filmId.intValue(), userId.intValue());
