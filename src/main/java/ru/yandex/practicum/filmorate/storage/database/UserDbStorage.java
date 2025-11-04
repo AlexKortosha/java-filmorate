@@ -106,6 +106,8 @@ public class UserDbStorage implements UserStorage {
         try {
             jdbcTemplate.update(sql, userId, friendId);
         } catch (Exception e) {
+            log.warn("Не удалось добавить дружбу между пользователями {} и {}: {}", userId, friendId, e.getMessage());
+            throw e; // пробрасываем исключение дальше
         }
     }
 
