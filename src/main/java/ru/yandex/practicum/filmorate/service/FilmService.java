@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.database.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.database.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.database.MpaDbStorage;
 
@@ -70,7 +71,12 @@ public class FilmService {
             throw new NotFoundException("Фильм или пользователь не найден");
         }
 
-        film.getLikes().add(userId);
+        film.getLikes().add(userId); 
+
+        if (filmStorage instanceof FilmDbStorage) {
+            ((FilmDbStorage) filmStorage).addLike(filmId.intValue(), userId.intValue());
+        }
+
         log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
     }
 
