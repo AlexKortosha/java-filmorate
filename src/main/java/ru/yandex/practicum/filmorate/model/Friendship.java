@@ -6,10 +6,8 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"friend_Id"})
+@EqualsAndHashCode(of = {"friendId"})
 public class Friendship {
-
-    private int friend_Id;
-    private int user_Id;
-
+    private int friendId;
+    private int userId;
 }
