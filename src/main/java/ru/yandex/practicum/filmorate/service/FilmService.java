@@ -6,9 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.database.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.database.MpaDbStorage;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -20,6 +23,8 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final MpaDbStorage mpaDbStorage;
+    private final GenreDbStorage genreDbStorage;
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();
@@ -27,14 +32,34 @@ public class FilmService {
 
     public Film addFilm(Film film) {
         validateFilm(film);
+        validateMpa(film);
+        validateGenres(film);
         log.info("Добавление фильма: {}", film.getName());
         return filmStorage.add(film);
     }
 
     public Film updateFilm(Film film) {
+        Film existingFilm = filmStorage.getById(film.getId());
+        if (existingFilm == null) {
+            throw new NotFoundException("Фильм с id " + film.getId() + " не найден.");
+        }
         validateFilm(film);
+        validateMpa(film);
+        validateGenres(film);
         log.info("Обновление фильма с id={}", film.getId());
         return filmStorage.update(film);
+    }
+
+    public Film getFilm(Long id) {
+        Film film = filmStorage.getById(id);
+        if (film == null) {
+            throw new NotFoundException("Фильм с id " + id + " не найден.");
+        }
+        return film;
+    }
+
+    public Collection<Film> getAllFilms() {
+        return filmStorage.findAll();
     }
 
     public void addLike(Long filmId, Long userId) {
@@ -82,5 +107,28 @@ public class FilmService {
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
     }
+
+    private void validateMpa(Film film) {
+        if (film.getMpa() == null) {
+            throw new ValidationException("MPA должен быть указан");
+        }
+
+        if (!mpaDbStorage.existsById(film.getMpa().getId())) {
+            throw new NotFoundException("MPA с id " + film.getMpa().getId() + " не найден.");
+        }
+    }
+
+    private void validateGenres(Film film) {
+        if (film.getGenres() == null || film.getGenres().isEmpty()) {
+            return;
+        }
+
+        for (Genre genre : film.getGenres()) {
+            if (!genreDbStorage.getById(genre.getId()).isPresent()) {
+                throw new NotFoundException("Жанр с id " + genre.getId() + " не найден.");
+            }
+        }
+    }
+
 
 }

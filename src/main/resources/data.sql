@@ -14,7 +14,3 @@ VALUES ('Документальный'),
        ('Мелодрама'),
        ('Мультфильм'),
        ('Триллер');
-
-INSERT INTO FRIENDSHIP_STATUS (status)
-VALUES ('NOT_CONFIRMED'),
-       ('CONFIRMED');

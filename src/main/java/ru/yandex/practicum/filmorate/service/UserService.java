@@ -30,65 +30,58 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+        validateUserExists(user.getId());
         validateUser(user);
         log.info("Обновление пользователя: {}", user.getId());
         return userStorage.update(user);
     }
 
-    public void addFriend(Long userId, Long friendId) {
-        User user = userStorage.getById(userId);
-        User friend = userStorage.getById(friendId);
-
-        if (user == null || friend == null) {
-            throw new NotFoundException("Пользователь не найден");
-        }
-
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
-
-        log.info("Пользователь {} и {} теперь друзья", userId, friendId);
-    }
-
-    public void removeFriend(Long userId, Long friendId) {
-        User user = userStorage.getById(userId);
-        User friend = userStorage.getById(friendId);
-
-        if (user == null || friend == null) {
-            throw new NotFoundException("Пользователь не найден");
-        }
-
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
-
-        log.info("Пользователи {} и {} больше не друзья", userId, friendId);
-    }
-
-    public List<User> getFriends(Long userId) {
-        User user = userStorage.getById(userId);
+    public User getUser(Long id) {
+        User user = userStorage.getById(id);
         if (user == null) {
-            throw new NotFoundException("Пользователь не найден");
+            throw new NotFoundException("Пользователь с id " + id + " не найден.");
         }
-        return user.getFriends().stream()
+        return user;
+    }
+
+    public List<User> getAllUsers() {
+
+        return userStorage.getAllUsers();
+    }
+
+
+    public void addFriend(Long id, Long friendId) {
+        validateUserExists(id);
+        validateUserExists(friendId);
+        userStorage.addFriend(id, friendId);
+    }
+
+    public void removeFriend(Long id, Long friendId) {
+        validateUserExists(id);
+        validateUserExists(friendId);
+        userStorage.removeFriend(id, friendId);
+    }
+
+    public List<User> getFriends(Long id) {
+        User user = validateUserExists(id);
+        User userWithFriends = userStorage.getById(id);
+        return userWithFriends.getFriends().stream()
                 .map(userStorage::getById)
-                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
-    public List<User> getCommonFriends(Long userId, Long otherId) {
-        User user = userStorage.getById(userId);
-        User other = userStorage.getById(otherId);
+    public List<User> getCommonFriends(Long id, Long otherId) {
+        validateUserExists(id);
+        validateUserExists(otherId);
+        return userStorage.getCommonFriends(id, otherId);
+    }
 
-        if (user == null || other == null) {
-            throw new NotFoundException("Пользователь не найден");
+    private User getUserWithFriends(Long id) {
+        User user = userStorage.getById(id);
+        if (user == null) {
+            throw new NotFoundException("Пользователь с id " + id + " не найден.");
         }
-
-        Set<Long> commonIds = new HashSet<>(user.getFriends());
-        commonIds.retainAll(other.getFriends());
-
-        return commonIds.stream()
-                .map(userStorage::getById)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return user;
     }
 
     private void validateUser(User user) {
@@ -108,4 +101,13 @@ public class UserService {
             user.setName(user.getLogin());
         }
     }
+
+    private User validateUserExists(Long userId) {
+        User user = userStorage.getById(userId);
+        if (user == null) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден.");
+        }
+        return user;
+    }
+
 }
