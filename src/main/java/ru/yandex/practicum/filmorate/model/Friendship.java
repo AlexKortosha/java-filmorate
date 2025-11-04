@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 @AllArgsConstructor
 @EqualsAndHashCode(of = {"friend_Id"})
 public class Friendship {
+
     private int friend_Id;
     private int user_Id;
+
 }
