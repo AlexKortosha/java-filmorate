@@ -64,7 +64,7 @@ class UserControllerValidationTest {
 
             @Override
             public void removeFriend(Long userId, Long friendId) {
-                
+                //тест
             }
 
             @Override
