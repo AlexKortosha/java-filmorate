@@ -6,12 +6,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
@@ -21,11 +20,12 @@ import java.util.*;
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final UserRowMapper userRowMapper = new UserRowMapper();
 
     @Override
     public List<User> findAll() {
         String sql = "SELECT * FROM users";
-        List<User> users = jdbcTemplate.query(sql, this::mapRowToUser);
+        List<User> users = jdbcTemplate.query(sql, userRowMapper);
         Map<Long, Set<Long>> allFriends = getAllFriends();
         for (User user : users) {
             user.setFriends(allFriends.getOrDefault(user.getId(), new HashSet<>()));
@@ -70,7 +70,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User getById(Long id) {
         String sql = "SELECT * FROM users WHERE user_id=?";
-        List<User> users = jdbcTemplate.query(sql, this::mapRowToUser, id);
+        List<User> users = jdbcTemplate.query(sql, userRowMapper, id);
         if (users.isEmpty()) {
             return null;
         }
@@ -83,14 +83,14 @@ public class UserDbStorage implements UserStorage {
     public Optional<User> findUserById(int id) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
 
-        List<User> users = jdbcTemplate.query(sql, this::mapRowToUser, id);
+        List<User> users = jdbcTemplate.query(sql, userRowMapper, id);
         return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
     }
 
     @Override
     public List<User> getAllUsers() {
         String sql = "SELECT * FROM users";
-        List<User> users = jdbcTemplate.query(sql, this::mapRowToUser);
+        List<User> users = jdbcTemplate.query(sql, userRowMapper);
         Map<Long, Set<Long>> allFriends = getAllFriends();
         for (User user : users) {
             user.setFriends(allFriends.getOrDefault(user.getId(), new HashSet<>()));
@@ -140,20 +140,8 @@ public class UserDbStorage implements UserStorage {
 
         String inSql = String.join(",", Collections.nCopies(commonFriendIds.size(), "?"));
         String userSql = "SELECT * FROM users WHERE user_id IN (" + inSql + ")";
-        List<User> users = jdbcTemplate.query(userSql, this::mapRowToUser, commonFriendIds.toArray());
+        List<User> users = jdbcTemplate.query(userSql, userRowMapper, commonFriendIds.toArray());
         return users;
-    }
-
-    private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
-        User user = new User();
-        user.setId(rs.getLong("user_id"));
-        user.setEmail(rs.getString("email"));
-        user.setLogin(rs.getString("login"));
-        user.setName(rs.getString("name"));
-        user.setBirthday(rs.getDate("birthday").toLocalDate());
-        user.setFriends(new HashSet<>());
-        user.setFriends(getUserFriends(user.getId()));
-        return user;
     }
 
     private Map<Long, Set<Long>> getAllFriends() {

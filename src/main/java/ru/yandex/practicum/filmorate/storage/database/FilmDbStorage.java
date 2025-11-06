@@ -7,9 +7,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.*;
@@ -22,6 +22,7 @@ import java.util.*;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final FilmRowMapper filmRowMapper = new FilmRowMapper();
 
     @Override
     public Collection<Film> findAll() {
@@ -31,7 +32,7 @@ public class FilmDbStorage implements FilmStorage {
                 JOIN rating r ON f.rating_id = r.rating_id
                 """;
 
-        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm);
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
         films.forEach(this::loadGenresAndLikes);
         return films;
     }
@@ -89,7 +90,7 @@ public class FilmDbStorage implements FilmStorage {
                 JOIN rating r ON f.rating_id = r.rating_id
                 WHERE f.film_id = ?
                 """;
-        Film film = jdbcTemplate.query(sql, this::mapRowToFilm, id)
+        Film film = jdbcTemplate.query(sql, filmRowMapper, id)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Фильм с id=" + id + " не найден"));
@@ -124,7 +125,7 @@ public class FilmDbStorage implements FilmStorage {
             FROM film f
             JOIN rating r ON f.rating_id = r.rating_id
             """;
-        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm);
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
 
         // Загружаем жанры и лайки для каждого фильма
         films.forEach(this::loadGenresAndLikes);
@@ -134,19 +135,6 @@ public class FilmDbStorage implements FilmStorage {
                 .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
                 .limit(count)
                 .toList();
-    }
-
-    // --- вспомогательные методы ---
-    private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
-        Film film = new Film();
-        film.setId(rs.getLong("film_id"));
-        film.setName(rs.getString("name"));
-        film.setDescription(rs.getString("description"));
-        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-        film.setDuration(rs.getInt("duration"));
-        Mpa mpa = new Mpa(rs.getInt("rating_id"), rs.getString("rating_name"));
-        film.setMpa(mpa);
-        return film;
     }
 
     private void updateFilmGenres(Film film) {

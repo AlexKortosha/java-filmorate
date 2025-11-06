@@ -3,11 +3,10 @@ package ru.yandex.practicum.filmorate.storage.database;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.mapper.MpaRowMapper;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -18,17 +17,18 @@ import java.util.stream.Collectors;
 public class MpaDbStorage implements MpaStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final MpaRowMapper mpaRowMapper = new MpaRowMapper();
 
     @Override
     public Collection<Mpa> findAll() {
         String sql = "SELECT * FROM rating ORDER BY rating_id";
-        return jdbcTemplate.query(sql, this::mapRowToMpa);
+        return jdbcTemplate.query(sql, mpaRowMapper);
     }
 
     @Override
     public Optional<Mpa> getById(int id) {
         String sql = "SELECT * FROM rating WHERE rating_id = ?";
-        List<Mpa> result = jdbcTemplate.query(sql, this::mapRowToMpa, id);
+        List<Mpa> result = jdbcTemplate.query(sql, mpaRowMapper, id);
         return result.stream().findFirst();
     }
 
@@ -46,13 +46,7 @@ public class MpaDbStorage implements MpaStorage {
         String inClause = ids.stream().map(x -> "?").collect(Collectors.joining(","));
         String sql = String.format("SELECT * FROM mpa_ratings WHERE id IN (%s) ORDER BY id", inClause);
 
-        return jdbcTemplate.query(sql, ids.toArray(), this::mapRowToMpa);
+        return jdbcTemplate.query(sql, ids.toArray(), mpaRowMapper);
     }
 
-    private Mpa mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
-        Mpa mpa = new Mpa();
-        mpa.setId(rs.getInt("rating_id"));
-        mpa.setName(rs.getString("name"));
-        return mpa;
-    }
 }
