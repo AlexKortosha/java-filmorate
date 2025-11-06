@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.database.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.database.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.database.MpaDbStorage;
 
@@ -122,10 +121,22 @@ public class FilmService {
             return;
         }
 
-        for (Genre genre : film.getGenres()) {
-            if (!genreDbStorage.getById(genre.getId()).isPresent()) {
-                throw new NotFoundException("Жанр с id " + genre.getId() + " не найден.");
-            }
+        Set<Integer> genreIds = film.getGenres().stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
+
+        List<Genre> foundGenres = genreDbStorage.getGenresByIds(genreIds); //Все жанры
+
+        Set<Integer> foundIds = foundGenres.stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
+
+        Set<Integer> missingIds = genreIds.stream()
+                .filter(id -> !foundIds.contains(id))
+                .collect(Collectors.toSet());
+
+        if (!missingIds.isEmpty()) {
+            throw new NotFoundException("Жанры с id " + missingIds + " не найдены.");
         }
     }
 

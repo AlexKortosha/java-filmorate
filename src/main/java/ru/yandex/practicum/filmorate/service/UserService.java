@@ -63,10 +63,13 @@ public class UserService {
     }
 
     public List<User> getFriends(Long id) {
-        User user = validateUserExists(id);
-        User userWithFriends = userStorage.getById(id);
-        return userWithFriends.getFriends().stream()
+
+        validateUserExists(id);
+        Set<Long> friendIds = userStorage.getUserFriends(id);
+
+        return friendIds.stream()
                 .map(userStorage::getById)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 

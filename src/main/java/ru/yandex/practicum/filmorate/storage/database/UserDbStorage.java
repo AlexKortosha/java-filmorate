@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("UserDbStorage")
@@ -24,11 +25,27 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> findAll() {
-        String sql = "SELECT * FROM users";
-        List<User> users = jdbcTemplate.query(sql, userRowMapper);
-        Map<Long, Set<Long>> allFriends = getAllFriends();
+
+        String sqlUsers = "SELECT * FROM users";
+        List<User> users = jdbcTemplate.query(sqlUsers, userRowMapper);
+
+        if (users.isEmpty()) {
+            return users;
+        }
+
+        String inSql = users.stream().map(u -> "?").collect(Collectors.joining(","));
+        String sqlFriends = "SELECT user_id, friend_id FROM friendship WHERE user_id IN (" + inSql + ")";
+        List<Long> userIds = users.stream().map(User::getId).toList();
+
+        Map<Long, Set<Long>> friendsMap = new HashMap<>();
+        jdbcTemplate.query(sqlFriends, rs -> {
+            Long userId = rs.getLong("user_id");
+            Long friendId = rs.getLong("friend_id");
+            friendsMap.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
+        }, userIds.toArray());
+
         for (User user : users) {
-            user.setFriends(allFriends.getOrDefault(user.getId(), new HashSet<>()));
+            user.setFriends(friendsMap.getOrDefault(user.getId(), Set.of()));
         }
 
         return users;

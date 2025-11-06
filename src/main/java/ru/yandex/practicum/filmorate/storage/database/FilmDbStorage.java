@@ -119,22 +119,24 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getMostPopularFilms(int count) {
-        // Загружаем все фильмы с MPA
         String sql = """
-            SELECT f.*, r.name AS rating_name
-            FROM film f
-            JOIN rating r ON f.rating_id = r.rating_id
-            """;
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
+        SELECT f.*, r.name AS rating_name, COUNT(fl.user_id) AS likes_count
+        FROM film f
+        JOIN rating r ON f.rating_id = r.rating_id
+        LEFT JOIN film_like fl ON f.film_id = fl.film_id
+        GROUP BY f.film_id, r.name
+        ORDER BY likes_count DESC
+        LIMIT ?
+        """;
 
-        // Загружаем жанры и лайки для каждого фильма
-        films.forEach(this::loadGenresAndLikes);
+        List<Film> films = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Film film = filmRowMapper.mapRow(rs, rowNum);
+            // Подгружаем жанры для каждого фильма
+            loadGenresAndLikes(film);
+            return film;
+        }, count);
 
-        // Сортируем по количеству лайков по убыванию и ограничиваем количеством
-        return films.stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-                .limit(count)
-                .toList();
+        return films;
     }
 
     private void updateFilmGenres(Film film) {
@@ -150,26 +152,16 @@ public class FilmDbStorage implements FilmStorage {
     private void loadGenresAndLikes(Film film) {
 
         String sqlGenres = """
-        SELECT g.genre_id, g.name
+        
+                SELECT g.genre_id, g.name
         FROM genre g
         JOIN film_genre fg ON g.genre_id = fg.genre_id
         WHERE fg.film_id = ?
         ORDER BY g.genre_id
         """;
-
-        List<Genre> genreList = jdbcTemplate.query(
-                sqlGenres,
+        List<Genre> genreList = jdbcTemplate.query(sqlGenres,
                 (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("name")),
-                film.getId()
-        );
-
-
-        LinkedHashSet<Genre> genres = new LinkedHashSet<>(genreList);
-        film.setGenres(genres);
-
-
-        String sqlLikes = "SELECT user_id FROM film_like WHERE film_id = ?";
-        Set<Long> likes = new HashSet<>(jdbcTemplate.queryForList(sqlLikes, Long.class, film.getId()));
-        film.setLikes(likes);
-    }
+                film.getId());
+        film.setGenres(new LinkedHashSet<>(genreList));
+        }
 }
