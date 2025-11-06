@@ -201,8 +201,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private void loadGenresAndLikes(Film film) {
 
-        String sqlGenres = """
-        
+        String sqlGenres = """    
                 SELECT g.genre_id, g.name
         FROM genre g
         JOIN film_genre fg ON g.genre_id = fg.genre_id
