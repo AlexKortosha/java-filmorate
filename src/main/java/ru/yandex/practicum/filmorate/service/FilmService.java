@@ -71,11 +71,7 @@ public class FilmService {
             throw new NotFoundException("Фильм или пользователь не найден");
         }
 
-        film.getLikes().add(userId);
-
-        if (filmStorage instanceof FilmDbStorage) {
-            ((FilmDbStorage) filmStorage).addLike(filmId.intValue(), userId.intValue());
-        }
+        filmStorage.addLike(filmId.intValue(), userId.intValue());
 
         log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
     }
@@ -88,15 +84,12 @@ public class FilmService {
             throw new NotFoundException("Фильм или пользователь не найден");
         }
 
-        film.getLikes().remove(userId);
+        filmStorage.removeLike(filmId.intValue(), userId.intValue());
         log.info("Пользователь {} удалил лайк с фильма {}", userId, filmId);
     }
 
     public List<Film> getMostPopularFilms(int count) {
-        return filmStorage.findAll().stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getMostPopularFilms(count);
     }
 
     private void validateFilm(Film film) {
