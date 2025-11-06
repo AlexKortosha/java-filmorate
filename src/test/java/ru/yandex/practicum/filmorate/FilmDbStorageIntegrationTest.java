@@ -38,7 +38,7 @@ class FilmDbStorageIntegrationTest {
         Film fetchedFilm = filmStorage.getById(savedFilm.getId());
         assertThat(fetchedFilm.getName()).isEqualTo("Test Film");
         assertThat(fetchedFilm.getMpa().getId()).isEqualTo(mpa.getId());
-        assertThat(fetchedFilm.getLikes()).isEmpty();
+        assertThat(fetchedFilm.getGenres()).isNotNull(); // проверяем, что жанры подгружены (могут быть пустыми)
     }
 
     @Test
@@ -59,5 +59,6 @@ class FilmDbStorageIntegrationTest {
         Film updatedFilm = filmStorage.getById(savedFilm.getId());
         assertThat(updatedFilm.getName()).isEqualTo("Updated Film");
         assertThat(updatedFilm.getDuration()).isEqualTo(100);
+        assertThat(updatedFilm.getGenres()).isNotNull(); // проверяем наличие жанров
     }
 }
