@@ -200,16 +200,18 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void loadGenresAndLikes(Film film) {
-        String sqlGenres = """    
-                SELECT g.genre_id, g.name
-        FROM genre g
-        JOIN film_genre fg ON g.genre_id = fg.genre_id
-        WHERE fg.film_id = ?
-        ORDER BY g.genre_id
-        """;
+        String sqlGenres = """
+            SELECT g.genre_id, g.name
+            FROM genre g
+            JOIN film_genre fg ON g.genre_id = fg.genre_id
+            WHERE fg.film_id = ?
+            ORDER BY g.genre_id
+            """;
+
         List<Genre> genreList = jdbcTemplate.query(sqlGenres,
                 (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("name")),
                 film.getId());
+
         film.setGenres(new LinkedHashSet<>(genreList));
-        }
+    }
 }
