@@ -39,32 +39,8 @@ public class FilmDbStorage implements FilmStorage {
             return films;
         }
 
-        List<Long> filmIds = films.stream().map(Film::getId).toList();
-        String inSql = filmIds.stream().map(id -> "?").collect(Collectors.joining(","));
+        loadGenresForFilms(films);
 
-        String sqlGenres = "SELECT fg.film_id, g.genre_id, g.name " +
-                "FROM film_genre fg " +
-                "JOIN genre g ON fg.genre_id = g.genre_id " +
-                "WHERE fg.film_id IN (" + inSql + ") " +
-                "ORDER BY g.genre_id";
-        Map<Long, LinkedHashSet<Genre>> filmGenres = new HashMap<>();
-        jdbcTemplate.query(sqlGenres, rs -> {
-            Long filmId = rs.getLong("film_id");
-            Genre genre = new Genre(rs.getInt("genre_id"), rs.getString("name"));
-            filmGenres.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(genre);
-        }, filmIds.toArray());
-
-        String sqlLikes = "SELECT film_id, user_id FROM film_like WHERE film_id IN (" + inSql + ")";
-        Map<Long, Set<Long>> filmLikes = new HashMap<>();
-        jdbcTemplate.query(sqlLikes, rs -> {
-            Long filmId = rs.getLong("film_id");
-            Long userId = rs.getLong("user_id");
-            filmLikes.computeIfAbsent(filmId, k -> new HashSet<>()).add(userId);
-        }, filmIds.toArray());
-
-        for (Film film : films) {
-            film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>()));
-        }
         return films;
     }
 
@@ -163,27 +139,7 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
 
         if (films.isEmpty()) {
-            return films;
-        }
-
-        List<Long> filmIds = films.stream().map(Film::getId).toList();
-        String inSql = filmIds.stream().map(id -> "?").collect(Collectors.joining(","));
-
-        String sqlGenres = "SELECT fg.film_id, g.genre_id, g.name " +
-                "FROM film_genre fg " +
-                "JOIN genre g ON fg.genre_id = g.genre_id " +
-                "WHERE fg.film_id IN (" + inSql + ") " +
-                "ORDER BY g.genre_id";
-
-        Map<Long, LinkedHashSet<Genre>> filmGenres = new HashMap<>();
-        jdbcTemplate.query(sqlGenres, rs -> {
-            Long filmId = rs.getLong("film_id");
-            Genre genre = new Genre(rs.getInt("genre_id"), rs.getString("name"));
-            filmGenres.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(genre);
-        }, filmIds.toArray());
-
-        for (Film film : films) {
-            film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>()));
+            loadGenresForFilms(films);
         }
 
         return films;
@@ -213,5 +169,31 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId());
 
         film.setGenres(new LinkedHashSet<>(genreList));
+    }
+
+    private void loadGenresForFilms(List<Film> films) {
+        List<Long> filmIds = films.stream().map(Film::getId).toList();
+        if (filmIds.isEmpty()) {
+            return;
+        }
+
+        String inSql = filmIds.stream().map(id -> "?").collect(Collectors.joining(","));
+        String sql = "SELECT fg.film_id, g.genre_id, g.name " +
+                "FROM film_genre fg " +
+                "JOIN genre g ON fg.genre_id = g.genre_id " +
+                "WHERE fg.film_id IN (" + inSql + ") " +
+                "ORDER BY g.genre_id";
+
+        Map<Long, LinkedHashSet<Genre>> filmGenres = new HashMap<>();
+
+        jdbcTemplate.query(sql, rs -> {
+            Long filmId = rs.getLong("film_id");
+            Genre genre = new Genre(rs.getInt("genre_id"), rs.getString("name"));
+            filmGenres.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(genre);
+        }, filmIds.toArray());
+
+        for (Film film : films) {
+            film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>()));
+        }
     }
 }
