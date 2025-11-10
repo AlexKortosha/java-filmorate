@@ -14,6 +14,8 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.*;
 import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -141,6 +143,49 @@ public class FilmDbStorage implements FilmStorage {
         if (films.isEmpty()) {
             loadGenresForFilms(films);
         }
+
+        return films;
+    }
+
+    @Override
+    public List<Film> getRecommendationFilms(Long userId) {
+        String getSimilarUsersSql = """
+                SELECT fl2.user_id
+                FROM film_like fl1
+                JOIN film_like fl2 ON (fl1.film_id = fl2.film_id)
+                WHERE fl1.user_id = ?
+                  AND fl2.user_id != ?
+                GROUP BY fl2.user_id
+                ORDER BY COUNt(*) DESC
+                """;
+
+        List<Long> similarUsersIds = jdbcTemplate.queryForList(getSimilarUsersSql, Long.class, userId, userId);
+
+        if (similarUsersIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String getRecommendationFilmsSql = """
+                SELECT f.*,
+                       r.name AS rating_name
+                FROM film f
+                JOIN rating r ON (f.rating_id = r.rating_id)
+                WHERE film_id IN (
+                    SELECT fl.film_id
+                    FROM film_like fl
+                    WHERE fl.user_id = ?
+                        AND fl.film_id NOT IN (
+                            SELECT film_id
+                            FROM film_like
+                            WHERE user_id = ?
+                    )
+                )
+                """;
+
+        List<Film> films = jdbcTemplate.query(getRecommendationFilmsSql,
+                filmRowMapper, similarUsersIds.getFirst(), userId);
+
+        loadGenresForFilms(films);
 
         return films;
     }
