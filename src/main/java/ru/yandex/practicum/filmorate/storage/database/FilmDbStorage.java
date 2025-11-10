@@ -156,7 +156,7 @@ public class FilmDbStorage implements FilmStorage {
                 WHERE fl1.user_id = ?
                   AND fl2.user_id != ?
                 GROUP BY fl2.user_id
-                ORDER BY COUNt(*) DESC
+                ORDER BY COUNT(*) DESC
                 """;
 
         List<Long> similarUsersIds = jdbcTemplate.queryForList(getSimilarUsersSql, Long.class, userId, userId);
