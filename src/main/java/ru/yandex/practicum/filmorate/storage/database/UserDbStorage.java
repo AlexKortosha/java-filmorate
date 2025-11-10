@@ -105,19 +105,6 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getAllUsers() {
-        String sql = "SELECT * FROM users";
-        List<User> users = jdbcTemplate.query(sql, userRowMapper);
-        Map<Long, Set<Long>> allFriends = getAllFriends();
-        for (User user : users) {
-            user.setFriends(allFriends.getOrDefault(user.getId(), new HashSet<>()));
-        }
-
-        return users;
-    }
-
-
-    @Override
     public void addFriend(Long userId, Long friendId) {
         String sql = "INSERT INTO friendship (user_id, friend_id) VALUES (?, ?)";
         try {
