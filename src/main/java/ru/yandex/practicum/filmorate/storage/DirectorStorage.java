@@ -16,4 +16,7 @@ public interface DirectorStorage {
     Optional<Director> getById(Long id);
 
     void removeDirector(Long id);
+
+    boolean existsById(Long id);
 }
+
