@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.database;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -14,6 +15,8 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.*;
 import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -141,6 +144,49 @@ public class FilmDbStorage implements FilmStorage {
         if (films.isEmpty()) {
             loadGenresForFilms(films);
         }
+
+        return films;
+    }
+
+    @Override
+    public List<Film> getRecommendationFilms(Long userId) {
+        String getSimilarUserSql = """
+                SELECT fl2.user_id
+                FROM film_like fl1
+                JOIN film_like fl2 ON (fl1.film_id = fl2.film_id)
+                WHERE fl1.user_id = ?
+                  AND fl2.user_id != ?
+                GROUP BY fl2.user_id
+                ORDER BY COUNT(*) DESC
+                LIMIT 1
+                """;
+
+        long similarUserId;
+        try {
+            similarUserId = jdbcTemplate.queryForObject(getSimilarUserSql, Long.class, userId, userId);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        }
+
+        String getRecommendationFilmsSql = """
+                SELECT f.*,
+                       r.name AS rating_name
+                FROM film f
+                JOIN rating r ON (f.rating_id = r.rating_id)
+                WHERE film_id IN (
+                    SELECT fl.film_id
+                    FROM film_like fl
+                    WHERE fl.user_id = ?
+                        AND fl.film_id NOT IN (
+                            SELECT film_id
+                            FROM film_like
+                            WHERE user_id = ?
+                    )
+                )
+                """;
+
+        List<Film> films = jdbcTemplate.query(getRecommendationFilmsSql, filmRowMapper, similarUserId, userId);
+        loadGenresForFilms(films);
 
         return films;
     }
