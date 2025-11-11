@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,12 +21,11 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class DirectorDbStorage implements DirectorStorage {
-
     private final JdbcTemplate jdbcTemplate;
     private final DirectorRowMapper directorRowMapper = new DirectorRowMapper();
 
     @Override
-    public List<Director> findAll() {
+    public Collection<Director> findAll() {
         String sql = "SELECT * FROM director ORDER BY director_id";
         return jdbcTemplate.query(sql, directorRowMapper);
     }
@@ -68,5 +68,11 @@ public class DirectorDbStorage implements DirectorStorage {
     public void removeDirector(Long id) {
         String sql = "DELETE FROM director WHERE director_id = ?";
         jdbcTemplate.update(sql, id);
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        String sql = "SELECT EXISTS(SELECT 1 FROM director WHERE director_id = ?)";
+        return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, id));
     }
 }
