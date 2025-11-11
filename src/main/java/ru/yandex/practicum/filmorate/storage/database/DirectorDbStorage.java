@@ -26,13 +26,13 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Collection<Director> findAll() {
-        String sql = "SELECT * FROM director ORDER BY director_id";
+        String sql = "SELECT * FROM directors ORDER BY director_id";
         return jdbcTemplate.query(sql, directorRowMapper);
     }
 
     @Override
     public Director add(Director director) {
-        String sql = "INSERT INTO director (name) VALUES (?)";
+        String sql = "INSERT INTO directors (name) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
@@ -48,7 +48,7 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Director update(Director director) {
-        String sql = "UPDATE director SET name = ? WHERE director_id = ?";
+        String sql = "UPDATE directors SET name = ? WHERE director_id = ?";
 
         jdbcTemplate.update(sql,
                 director.getName(),
@@ -59,20 +59,20 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Optional<Director> getById(Long id) {
-        String sql = "SELECT * FROM director WHERE director_id = ?";
+        String sql = "SELECT * FROM directors WHERE director_id = ?";
         List<Director> result = jdbcTemplate.query(sql, directorRowMapper, id);
         return result.stream().findFirst();
     }
 
     @Override
     public void removeDirector(Long id) {
-        String sql = "DELETE FROM director WHERE director_id = ?";
+        String sql = "DELETE FROM directors WHERE director_id = ?";
         jdbcTemplate.update(sql, id);
     }
 
     @Override
     public boolean existsById(Long id) {
-        String sql = "SELECT EXISTS(SELECT 1 FROM director WHERE director_id = ?)";
+        String sql = "SELECT EXISTS(SELECT 1 FROM directors WHERE director_id = ?)";
         return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, id));
     }
 }
