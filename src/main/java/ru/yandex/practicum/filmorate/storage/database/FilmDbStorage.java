@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.database;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -149,7 +150,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getRecommendationFilms(Long userId) {
-        String getSimilarUsersSql = """
+        String getSimilarUserSql = """
                 SELECT fl2.user_id
                 FROM film_like fl1
                 JOIN film_like fl2 ON (fl1.film_id = fl2.film_id)
@@ -157,11 +158,13 @@ public class FilmDbStorage implements FilmStorage {
                   AND fl2.user_id != ?
                 GROUP BY fl2.user_id
                 ORDER BY COUNT(*) DESC
+                LIMIT 1
                 """;
 
-        List<Long> similarUsersIds = jdbcTemplate.queryForList(getSimilarUsersSql, Long.class, userId, userId);
-
-        if (similarUsersIds.isEmpty()) {
+        long similarUserId;
+        try {
+            similarUserId = jdbcTemplate.queryForObject(getSimilarUserSql, Long.class, userId, userId);
+        } catch (EmptyResultDataAccessException e) {
             return Collections.emptyList();
         }
 
@@ -182,9 +185,7 @@ public class FilmDbStorage implements FilmStorage {
                 )
                 """;
 
-        List<Film> films = jdbcTemplate.query(getRecommendationFilmsSql,
-                filmRowMapper, similarUsersIds.getFirst(), userId);
-
+        List<Film> films = jdbcTemplate.query(getRecommendationFilmsSql, filmRowMapper, similarUserId, userId);
         loadGenresForFilms(films);
 
         return films;
