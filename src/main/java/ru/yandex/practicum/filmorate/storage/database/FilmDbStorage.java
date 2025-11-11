@@ -130,20 +130,18 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getMostPopularFilms(int count) {
         String sql = """
-        SELECT f.*, r.name AS rating_name, COUNT(fl.user_id) AS likes_count
-        FROM film f
-        JOIN rating r ON f.rating_id = r.rating_id
-        LEFT JOIN film_like fl ON f.film_id = fl.film_id
-        GROUP BY f.film_id, r.rating_id, r.name, f.name, f.description, f.release_date, f.duration
-        ORDER BY likes_count DESC
-        LIMIT ?
+                SELECT f.*,
+                       r.name AS rating_name
+                FROM film f
+                JOIN rating r ON (f.rating_id = r.rating_id)
+                JOIN film_like fl ON f.film_id = fl.film_id
+                GROUP BY f.film_id
+                ORDER BY COUNT(fl.user_id) DESC
+                LIMIT ?
         """;
 
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
-
-        if (films.isEmpty()) {
-            loadGenresForFilms(films);
-        }
+        loadGenresForFilms(films);
 
         return films;
     }
