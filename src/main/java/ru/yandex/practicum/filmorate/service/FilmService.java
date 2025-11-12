@@ -87,8 +87,8 @@ public class FilmService {
         log.info("Пользователь {} удалил лайк с фильма {}", userId, filmId);
     }
 
-    public List<Film> getMostPopularFilms(int count) {
-        return filmStorage.getMostPopularFilms(count);
+    public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
+        return filmStorage.getMostPopularFilms(count, genreId, year);
     }
 
     public List<Film> getRecommendationFilms(Long userId) {

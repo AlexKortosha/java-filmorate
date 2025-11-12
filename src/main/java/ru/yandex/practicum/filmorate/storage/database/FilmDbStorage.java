@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmRowMapper filmRowMapper = new FilmRowMapper();
 
     @Override
@@ -128,22 +131,29 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getMostPopularFilms(int count) {
-        String sql = """
-        SELECT f.*, r.name AS rating_name, COUNT(fl.user_id) AS likes_count
-        FROM film f
-        JOIN rating r ON f.rating_id = r.rating_id
-        LEFT JOIN film_like fl ON f.film_id = fl.film_id
-        GROUP BY f.film_id, r.rating_id, r.name, f.name, f.description, f.release_date, f.duration
-        ORDER BY likes_count DESC
-        LIMIT ?
-        """;
+    public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
+        String getMostPopularFilmsSql = """
+                SELECT f.*,
+                       r.name AS rating_name,
+                       COUNT(fl.user_id) AS like_count
+                FROM film f
+                JOIN rating r ON f.rating_id = r.rating_id
+                JOIN film_like fl ON f.film_id = fl.film_id
+                LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+                WHERE (:genreId IS NULL OR fg.genre_id = :genreId)
+                  AND (:year IS NULL OR EXTRACT(YEAR FROM f.release_date) = :year)
+                GROUP BY f.film_id
+                ORDER BY like_count DESC
+                LIMIT :count;
+                """;
 
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("count", count)
+                .addValue("genreId", genreId)
+                .addValue("year", year);
 
-        if (films.isEmpty()) {
-            loadGenresForFilms(films);
-        }
+        List<Film> films = namedParameterJdbcTemplate.query(getMostPopularFilmsSql, params, filmRowMapper);
+        loadGenresForFilms(films);
 
         return films;
     }
