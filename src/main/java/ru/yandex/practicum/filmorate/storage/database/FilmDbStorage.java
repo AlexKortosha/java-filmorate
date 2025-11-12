@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.storage.database;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -11,9 +14,9 @@ import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-
-import java.sql.*;
 import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmRowMapper filmRowMapper = new FilmRowMapper();
 
     @Override
@@ -125,22 +129,72 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getMostPopularFilms(int count) {
-        String sql = """
-        SELECT f.*, r.name AS rating_name, COUNT(fl.user_id) AS likes_count
-        FROM film f
-        JOIN rating r ON f.rating_id = r.rating_id
-        LEFT JOIN film_like fl ON f.film_id = fl.film_id
-        GROUP BY f.film_id, r.rating_id, r.name, f.name, f.description, f.release_date, f.duration
-        ORDER BY likes_count DESC
-        LIMIT ?
-        """;
+    public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
+        String getMostPopularFilmsSql = """
+                SELECT f.*,
+                       r.name AS rating_name,
+                       COUNT(fl.user_id) AS like_count
+                FROM film f
+                JOIN rating r ON f.rating_id = r.rating_id
+                JOIN film_like fl ON f.film_id = fl.film_id
+                LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+                WHERE (:genreId IS NULL OR fg.genre_id = :genreId)
+                  AND (:year IS NULL OR EXTRACT(YEAR FROM f.release_date) = :year)
+                GROUP BY f.film_id
+                ORDER BY like_count DESC
+                LIMIT :count;
+                """;
 
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("count", count)
+                .addValue("genreId", genreId)
+                .addValue("year", year);
 
-        if (films.isEmpty()) {
-            loadGenresForFilms(films);
+        List<Film> films = namedParameterJdbcTemplate.query(getMostPopularFilmsSql, params, filmRowMapper);
+        loadGenresForFilms(films);
+
+        return films;
+    }
+
+    @Override
+    public List<Film> getRecommendationFilms(Long userId) {
+        String getSimilarUserSql = """
+                SELECT fl2.user_id
+                FROM film_like fl1
+                JOIN film_like fl2 ON (fl1.film_id = fl2.film_id)
+                WHERE fl1.user_id = ?
+                  AND fl2.user_id != ?
+                GROUP BY fl2.user_id
+                ORDER BY COUNT(*) DESC
+                LIMIT 1
+                """;
+
+        long similarUserId;
+        try {
+            similarUserId = jdbcTemplate.queryForObject(getSimilarUserSql, Long.class, userId, userId);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
         }
+
+        String getRecommendationFilmsSql = """
+                SELECT f.*,
+                       r.name AS rating_name
+                FROM film f
+                JOIN rating r ON (f.rating_id = r.rating_id)
+                WHERE film_id IN (
+                    SELECT fl.film_id
+                    FROM film_like fl
+                    WHERE fl.user_id = ?
+                        AND fl.film_id NOT IN (
+                            SELECT film_id
+                            FROM film_like
+                            WHERE user_id = ?
+                    )
+                )
+                """;
+
+        List<Film> films = jdbcTemplate.query(getRecommendationFilmsSql, filmRowMapper, similarUserId, userId);
+        loadGenresForFilms(films);
 
         return films;
     }
