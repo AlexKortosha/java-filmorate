@@ -196,4 +196,11 @@ public class FilmDbStorage implements FilmStorage {
             film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>()));
         }
     }
+
+    @Override
+    public boolean existsById(Long id) {
+        String sql = "SELECT COUNT(*) FROM film WHERE film_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return count > 0;
+    }
 }

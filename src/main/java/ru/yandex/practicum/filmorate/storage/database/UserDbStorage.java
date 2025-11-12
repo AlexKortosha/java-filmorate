@@ -175,4 +175,11 @@ public class UserDbStorage implements UserStorage {
         return allFriends;
     }
 
+    @Override
+    public boolean existsById(Long id) {
+        String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return count > 0;
+    }
+
 }

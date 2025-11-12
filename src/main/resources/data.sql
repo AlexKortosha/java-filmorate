@@ -10,3 +10,6 @@ MERGE INTO genre (genre_id, name) VALUES (3, 'Мультфильм');
 MERGE INTO genre (genre_id, name) VALUES (4, 'Триллер');
 MERGE INTO genre (genre_id, name) VALUES (5, 'Документальный');
 MERGE INTO genre (genre_id, name) VALUES (6, 'Боевик');
+
+MERGE INTO reactions (reaction_id, name) VALUES (1, 'LIKE');
+MERGE INTO reactions (reaction_id, name) VALUES (2, 'DISLIKE');
