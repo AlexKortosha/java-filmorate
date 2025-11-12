@@ -191,31 +191,31 @@ public class ReviewDBStorage implements ReviewStorage {
     }
 
     @Override
-    public Review addLike(Long reviewId, Long userId) {
+    public void addLike(Long reviewId, Long userId) {
         String sql = "INSERT INTO review_like (review_id, user_id, reaction_id) VALUES (?, ?, 1)";
         jdbcTemplate.update(sql, reviewId, userId);
-        return getReviewById(reviewId);
+        getReviewById(reviewId);
     }
 
     @Override
-    public Review addDislike(Long reviewId, Long userId) {
+    public void addDislike(Long reviewId, Long userId) {
         String sql = "INSERT INTO review_like (review_id, user_id, reaction_id) VALUES (?, ?, 2)";
         jdbcTemplate.update(sql, reviewId, userId);
-        return getReviewById(reviewId);
+        getReviewById(reviewId);
     }
 
     @Override
-    public Review deleteLike(Long reviewId, Long userId) {
+    public void deleteLike(Long reviewId, Long userId) {
         String sql = "DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND reaction_id = 1";
         jdbcTemplate.update(sql, reviewId, userId);
-        return getReviewById(reviewId);
+        getReviewById(reviewId);
     }
 
     @Override
-    public Review deleteDislike(Long reviewId, Long userId) {
+    public void deleteDislike(Long reviewId, Long userId) {
         String sql = "DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND reaction_id = 2";
         jdbcTemplate.update(sql, reviewId, userId);
-        return getReviewById(reviewId);
+        getReviewById(reviewId);
     }
 
     @Override
