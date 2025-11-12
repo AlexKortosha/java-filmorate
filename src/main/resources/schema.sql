@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS film
     release_date date    NOT NULL,
     duration     integer NOT NULL,
     rating_id    integer NOT NULL,
-    director_id  integer,
     CONSTRAINT name_not_blank CHECK (name <> ''),
     CONSTRAINT positive_duration CHECK (duration > 0)
 );
@@ -58,13 +57,21 @@ CREATE TABLE IF NOT EXISTS directors
     name        varchar(100) NOT NULL
 );
 
-ALTER TABLE film ADD FOREIGN KEY (rating_id) REFERENCES RATING (rating_id);
+CREATE TABLE IF NOT EXISTS film_director
+(
+     film_id  integer NOT NULL,
+     director_id integer NOT NULL
+);
 
-ALTER TABLE film ADD FOREIGN KEY (director_id) REFERENCES DIRECTORS (director_id) ON DELETE SET NULL;
+ALTER TABLE film ADD FOREIGN KEY (rating_id) REFERENCES RATING (rating_id);
 
 ALTER TABLE film_genre ADD FOREIGN KEY (film_id) REFERENCES FILM (film_id) ON DELETE CASCADE;
 
 ALTER TABLE film_genre ADD FOREIGN KEY (genre_id) REFERENCES GENRE (genre_id) ON DELETE CASCADE;
+
+ALTER TABLE film_director ADD FOREIGN KEY (film_id) REFERENCES FILM (film_id) ON DELETE CASCADE;
+
+ALTER TABLE film_director ADD FOREIGN KEY (director_id) REFERENCES DIRECTORS (director_id) ON DELETE CASCADE;
 
 ALTER TABLE friendship ADD FOREIGN KEY (user_id) REFERENCES USERS (user_id) ON DELETE CASCADE;
 
