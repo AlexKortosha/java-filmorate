@@ -3,11 +3,13 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
+@JsonPropertyOrder({"reviewId", "content", "isPositive", "userId", "filmId", "useful"})
 public class Review {
     @JsonProperty("reviewId")
     @JsonAlias("reviewId")
