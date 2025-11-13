@@ -201,6 +201,25 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
+    @Override
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        String sql = """
+            SELECT f.*, r.name AS rating_name
+            FROM film f
+            JOIN rating r ON f.rating_id = r.rating_id
+            JOIN film_like fl1 ON f.film_id = fl1.film_id
+            JOIN film_like fl2 ON f.film_id = fl2.film_id
+            WHERE fl1.user_id = ? AND fl2.user_id = ?
+            GROUP BY f.film_id
+            ORDER BY COUNT(fl1.user_id) DESC
+            """;
+
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
+        loadGenresForFilms(films);
+
+        return films;
+    }
+
     private void updateFilmGenres(Film film) {
         jdbcTemplate.update("DELETE FROM film_genre WHERE film_id = ?", film.getId());
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
