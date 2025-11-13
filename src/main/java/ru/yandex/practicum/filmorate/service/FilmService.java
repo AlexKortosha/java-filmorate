@@ -95,6 +95,13 @@ public class FilmService {
         return filmStorage.getRecommendationFilms(userId);
     }
 
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        userStorage.getById((long) userId);
+        userStorage.getById((long) friendId);
+
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
     private void validateFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             throw new ValidationException("Название не может быть пустым");
