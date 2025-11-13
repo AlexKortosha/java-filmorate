@@ -14,8 +14,6 @@ import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-
-import java.sql.*;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -251,5 +249,12 @@ public class FilmDbStorage implements FilmStorage {
         for (Film film : films) {
             film.setGenres(filmGenres.getOrDefault(film.getId(), new LinkedHashSet<>()));
         }
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        String sql = "SELECT COUNT(*) FROM film WHERE film_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return count > 0;
     }
 }
