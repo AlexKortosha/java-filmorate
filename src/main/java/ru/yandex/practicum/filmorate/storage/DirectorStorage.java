@@ -21,6 +21,6 @@ public interface DirectorStorage {
 
     boolean existsById(Long id);
 
-    List<Director> getDirectorByIds(Set<Long> genreIds);
+    List<Director> getDirectorByIds(Set<Long> directorIds);
 }
 
