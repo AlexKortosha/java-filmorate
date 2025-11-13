@@ -12,10 +12,8 @@ import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -74,5 +72,19 @@ public class DirectorDbStorage implements DirectorStorage {
     public boolean existsById(Long id) {
         String sql = "SELECT EXISTS(SELECT 1 FROM directors WHERE director_id = ?)";
         return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, id));
+    }
+
+    @Override
+    public List<Director> getDirectorByIds(Set<Long> directorIds) {
+        if (directorIds == null || directorIds.isEmpty()) {
+            return List.of();
+        }
+
+        String inSql = directorIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(","));
+        String sql = "SELECT * FROM directors WHERE director_id IN (" + inSql + ") ORDER BY director_id";
+
+        return jdbcTemplate.query(sql, directorRowMapper, directorIds.toArray());
     }
 }
