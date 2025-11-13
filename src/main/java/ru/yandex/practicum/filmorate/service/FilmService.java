@@ -107,6 +107,22 @@ public class FilmService {
         return filmStorage.getCommonFilms(userId, friendId);
     }
 
+    public List<Film> getDirectorFilmsByLikes(Long directorId) {
+        if (!directorStorage.existsById(directorId)) {
+            throw new NotFoundException("Директор с id " + directorId + " не найден.");
+        }
+
+        return filmStorage.getDirectorFilmsByLikes(directorId);
+    }
+
+    public List<Film> getDirectorFilmsByYears(Long directorId) {
+        if (!directorStorage.existsById(directorId)) {
+            throw new NotFoundException("Директор с id " + directorId + " не найден.");
+        }
+
+        return filmStorage.getDirectorFilmsByYears(directorId);
+    }
+
     private void validateFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             throw new ValidationException("Название не может быть пустым");

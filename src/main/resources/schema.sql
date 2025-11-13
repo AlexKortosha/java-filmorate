@@ -60,7 +60,8 @@ CREATE TABLE IF NOT EXISTS directors
 CREATE TABLE IF NOT EXISTS film_director
 (
      film_id  integer NOT NULL,
-     director_id integer NOT NULL
+     director_id integer NOT NULL,
+     PRIMARY KEY (film_id, director_id)
 );
 
 ALTER TABLE film ADD FOREIGN KEY (rating_id) REFERENCES RATING (rating_id);
