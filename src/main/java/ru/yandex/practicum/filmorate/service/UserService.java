@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final EventService eventService;
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -53,13 +54,21 @@ public class UserService {
     public void addFriend(Long id, Long friendId) {
         validateUserExists(id);
         validateUserExists(friendId);
+
         userStorage.addFriend(id, friendId);
+        log.info("Пользователь {} добавил в друзья {}", id, friendId);
+
+        eventService.addEvent(id, "FRIEND", "ADD", friendId);
     }
 
     public void removeFriend(Long id, Long friendId) {
         validateUserExists(id);
         validateUserExists(friendId);
+
         userStorage.removeFriend(id, friendId);
+        log.info("Пользователь {} удалил из друзей {}", id, friendId);
+
+        eventService.addEvent(id, "FRIEND", "REMOVE", friendId);
     }
 
     public List<User> getFriends(Long id) {
@@ -112,5 +121,4 @@ public class UserService {
         }
         return user;
     }
-
 }

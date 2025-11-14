@@ -8,6 +8,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.service.EventService;
 
 import java.util.Collection;
 import java.util.List;
@@ -20,6 +22,7 @@ public class UserController {
 
     private final UserService userService;
     private final FilmService filmService;
+    private final EventService eventService;
 
     @GetMapping
     public Collection<User> findAll() {
@@ -64,5 +67,12 @@ public class UserController {
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendations(@PathVariable Long id) {
         return filmService.getRecommendationFilms(id);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getUserFeed(@PathVariable Long id) {
+        log.info("Запрошена лента событий пользователя {}", id);
+        userService.getUser(id);
+        return eventService.getFeed(id);
     }
 }

@@ -25,6 +25,7 @@ public class FilmService {
     private final UserStorage userStorage;
     private final MpaDbStorage mpaDbStorage;
     private final GenreDbStorage genreDbStorage;
+    private final EventService eventService;
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();
@@ -73,6 +74,8 @@ public class FilmService {
         filmStorage.addLike(filmId.intValue(), userId.intValue());
 
         log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
+
+        eventService.addEvent(userId, "LIKE", "ADD", filmId);
     }
 
     public void removeLike(Long filmId, Long userId) {
@@ -84,7 +87,10 @@ public class FilmService {
         }
 
         filmStorage.removeLike(filmId.intValue(), userId.intValue());
+
         log.info("Пользователь {} удалил лайк с фильма {}", userId, filmId);
+
+        eventService.addEvent(userId, "LIKE", "REMOVE", filmId);
     }
 
     public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
@@ -150,6 +156,4 @@ public class FilmService {
             throw new NotFoundException("Жанры с id " + missingIds + " не найдены.");
         }
     }
-
-
 }
