@@ -60,6 +60,12 @@ public class FilmController {
         return ResponseEntity.ok(filmService.getMostPopularFilms(count, genreId, year));
     }
 
+    @GetMapping("/search")
+    public List<Film> searchFilms(@RequestParam String query, @RequestParam String by) {
+        log.info("Поиск фильмов. query='{}', by='{}'", query, by);
+        return filmService.search(query, by);
+    }
+
     @GetMapping("/common")
     public List<Film> getCommonFilms(
             @RequestParam int userId,
