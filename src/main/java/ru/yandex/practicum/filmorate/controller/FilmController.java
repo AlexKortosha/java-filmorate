@@ -36,9 +36,9 @@ public class FilmController {
         return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping
-    public ResponseEntity<Film> deleteFilm(@RequestBody Film film) {
-        Film deleted = filmService.deleteFilm(film);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Film> deleteFilm(@PathVariable Long id) {
+        Film deleted = filmService.deleteFilmById(id);
         return ResponseEntity.ok(deleted);
     }
 

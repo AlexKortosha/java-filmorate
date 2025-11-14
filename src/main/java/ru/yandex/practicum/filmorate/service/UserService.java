@@ -44,11 +44,11 @@ public class UserService {
         return user;
     }
 
-    public User deleteUser(User user) {
-        User existingUser = getUser(user.getId());
-        userStorage.delete(user.getId());
-        log.info("Пользователь удален {}", user.getId());
-        return existingUser;
+    public User deleteUserById(Long id) {
+        User user = getUser(id);
+        userStorage.delete(id);
+        log.info("Пользователь удален {}", id);
+        return user;
     }
 
     public List<User> getAllUsers() {

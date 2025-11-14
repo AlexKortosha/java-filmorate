@@ -64,11 +64,11 @@ public class FilmService {
         return film;
     }
 
-    public Film deleteFilm(Film film) {
-        Film existingFilm = getFilm(film.getId());
-        filmStorage.delete(film.getId());
-        log.info("Фильм удалён: {}", film.getId());
-        return existingFilm;
+    public Film deleteFilmById(Long id) {
+        Film film = getFilm(id);
+        filmStorage.delete(id);
+        log.info("Фильм {} удалён", id);
+        return film;
     }
 
     public Collection<Film> getAllFilms() {
