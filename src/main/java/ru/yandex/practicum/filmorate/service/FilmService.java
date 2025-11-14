@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.database.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.database.MpaDbStorage;
 
+import javax.management.monitor.MonitorSettingException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -61,6 +62,13 @@ public class FilmService {
             throw new NotFoundException("Фильм с id " + id + " не найден.");
         }
         return film;
+    }
+
+    public Film deleteFilm(Film film) {
+        Film existingFilm = getFilm(film.getId());
+        filmStorage.delete(film.getId());
+        log.info("Фильм удалён: {}", film.getId());
+        return existingFilm;
     }
 
     public Collection<Film> getAllFilms() {
