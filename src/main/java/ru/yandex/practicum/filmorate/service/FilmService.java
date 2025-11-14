@@ -123,6 +123,26 @@ public class FilmService {
         return filmStorage.getDirectorFilmsByYears(directorId);
     }
 
+    public List<Film> search(String query, String by) {
+        if (query == null || query.isBlank()) {
+            throw new ValidationException("Параметр query не может быть пустым");
+        }
+
+        Set<String> fields = Arrays.stream(by.split(","))
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+        boolean searchByTitle = fields.contains("title");
+        boolean searchByDirector = fields.contains("director");
+
+        if (!searchByTitle && !searchByDirector) {
+            throw new ValidationException("Параметр 'by' должен содержать 'title', 'director' или оба.");
+        }
+
+        return filmStorage.searchFilms(query.toLowerCase(), searchByTitle, searchByDirector);
+    }
+
     private void validateFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             throw new ValidationException("Название не может быть пустым");

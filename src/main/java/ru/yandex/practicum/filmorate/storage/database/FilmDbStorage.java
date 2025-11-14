@@ -161,6 +161,49 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> searchFilms(String query, boolean byTitle, boolean byDirector) {
+        if (!byTitle && !byDirector) {
+            return Collections.emptyList();
+        }
+
+        List<Object> params = new ArrayList<>();
+        List<String> conditions = new ArrayList<>();
+
+        if (byTitle) {
+            conditions.add("LOWER(f.name) LIKE ?");
+            params.add("%" + query.toLowerCase() + "%");
+        }
+        if (byDirector) {
+            conditions.add("LOWER(d.name) LIKE ?");
+            params.add("%" + query.toLowerCase() + "%");
+        }
+
+        String baseSql = """
+        SELECT DISTINCT f.*, r.name AS rating_name
+        FROM film f
+        JOIN rating r ON f.rating_id = r.rating_id
+        LEFT JOIN film_director fd ON f.film_id = fd.film_id
+        LEFT JOIN directors d ON fd.director_id = d.director_id
+        """;
+
+        String whereSql = "";
+        if (!conditions.isEmpty()) {
+            whereSql = "WHERE " + String.join(" OR ", conditions);
+        }
+
+        String orderSql = "ORDER BY f.film_id";
+
+        String sql = baseSql + "\n" + whereSql + "\n" + orderSql;
+
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, params.toArray());
+
+        loadGenresForFilms(films);
+        loadDirectorsForFilms(films);
+
+        return films;
+    }
+
+    @Override
     public List<Film> getRecommendationFilms(Long userId) {
         String getSimilarUserSql = """
                 SELECT fl2.user_id
