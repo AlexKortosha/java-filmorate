@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -34,6 +35,12 @@ public class UserController {
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         return userService.updateUser(user);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<User> deleteUser(@PathVariable Long id) {
+        User deleted = userService.deleteUserById(id);
+        return ResponseEntity.ok(deleted);
     }
 
     @GetMapping("/{id}")

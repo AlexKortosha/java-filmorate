@@ -44,6 +44,13 @@ public class UserService {
         return user;
     }
 
+    public User deleteUserById(Long id) {
+        User user = getUser(id);
+        userStorage.delete(id);
+        log.info("Пользователь удален {}", id);
+        return user;
+    }
+
     public List<User> getAllUsers() {
 
         return userStorage.getAllUsers();

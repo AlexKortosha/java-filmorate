@@ -97,6 +97,16 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void delete(Long id) {
+
+        int deleted = jdbcTemplate.update("DELETE FROM film WHERE film_id = ?", id);
+        if (deleted == 0) {
+            throw  new NotFoundException("Фильм с id= " + id + " не найден");
+        }
+
+    }
+
+    @Override
     public Film getById(Long id) {
         String sql = """
                 SELECT f.*, r.name AS rating_name
@@ -140,7 +150,7 @@ public class FilmDbStorage implements FilmStorage {
                        COUNT(fl.user_id) AS like_count
                 FROM film f
                 JOIN rating r ON f.rating_id = r.rating_id
-                JOIN film_like fl ON f.film_id = fl.film_id
+                LEFT JOIN film_like fl ON f.film_id = fl.film_id
                 LEFT JOIN film_genre fg ON f.film_id = fg.film_id
                 WHERE (:genreId IS NULL OR fg.genre_id = :genreId)
                   AND (:year IS NULL OR EXTRACT(YEAR FROM f.release_date) = :year)

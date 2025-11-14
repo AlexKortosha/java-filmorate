@@ -63,6 +63,13 @@ public class FilmService {
         return film;
     }
 
+    public Film deleteFilmById(Long id) {
+        Film film = getFilm(id);
+        filmStorage.delete(id);
+        log.info("Фильм {} удалён", id);
+        return film;
+    }
+
     public Collection<Film> getAllFilms() {
         return filmStorage.findAll();
     }
