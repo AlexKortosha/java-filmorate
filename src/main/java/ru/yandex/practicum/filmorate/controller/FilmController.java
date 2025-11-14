@@ -67,4 +67,17 @@ public class FilmController {
         log.info("Запрос общих фильмов между пользователями {} и {}", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(
+            @PathVariable Long directorId,
+            @RequestParam(defaultValue = "likes") String sortBy) {
+        log.info("Запрос фильмов режиссера с id {} отсортированных по {}", directorId, sortBy);
+
+        return switch (sortBy.toLowerCase()) {
+            case "year" -> filmService.getDirectorFilmsByYears(directorId);
+            case "likes" -> filmService.getDirectorFilmsByLikes(directorId);
+            default -> throw new IllegalArgumentException("Неизвестный порядок сортировки: " + sortBy);
+        };
+    }
 }
