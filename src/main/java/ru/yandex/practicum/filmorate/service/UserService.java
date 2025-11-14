@@ -44,6 +44,13 @@ public class UserService {
         return user;
     }
 
+    public User deleteUser(User user) {
+        User existingUser = getUser(user.getId());
+        userStorage.delete(user.getId());
+        log.info("Пользователь удален {}", user.getId());
+        return existingUser;
+    }
+
     public List<User> getAllUsers() {
 
         return userStorage.getAllUsers();
