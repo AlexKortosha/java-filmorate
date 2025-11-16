@@ -57,6 +57,7 @@ public class UserService {
 
         return userStorage.getAllUsers();
     }
+
     public void addFriend(Long id, Long friendId) {
         validateUserExists(id);
         validateUserExists(friendId);
