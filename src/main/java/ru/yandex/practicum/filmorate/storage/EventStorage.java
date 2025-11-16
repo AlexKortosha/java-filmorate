@@ -5,5 +5,6 @@ import java.util.List;
 
 public interface EventStorage {
     void save(Event event);
+
     List<Event> findByUserId(Long userId);
 }
