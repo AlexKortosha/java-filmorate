@@ -166,6 +166,7 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Film> films = namedParameterJdbcTemplate.query(getMostPopularFilmsSql, params, filmRowMapper);
         loadGenresForFilms(films);
+        loadDirectorsForFilms(films);
 
         return films;
     }
@@ -252,6 +253,7 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Film> films = jdbcTemplate.query(getRecommendationFilmsSql, filmRowMapper, similarUserId, userId);
         loadGenresForFilms(films);
+        loadDirectorsForFilms(films);
 
         return films;
     }
