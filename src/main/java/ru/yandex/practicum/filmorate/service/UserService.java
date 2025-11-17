@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final EventService eventService;
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -56,17 +58,32 @@ public class UserService {
         return userStorage.getAllUsers();
     }
 
-
     public void addFriend(Long id, Long friendId) {
         validateUserExists(id);
         validateUserExists(friendId);
         userStorage.addFriend(id, friendId);
+        eventService.createEvent(new Event(
+                null,
+                System.currentTimeMillis(),
+                id,
+                Event.EventType.FRIEND,
+                Event.Operation.ADD,
+                friendId
+        ));
     }
 
     public void removeFriend(Long id, Long friendId) {
         validateUserExists(id);
         validateUserExists(friendId);
         userStorage.removeFriend(id, friendId);
+        eventService.createEvent(new Event(
+                null,
+                System.currentTimeMillis(),
+                id,
+                Event.EventType.FRIEND,
+                Event.Operation.REMOVE,
+                friendId
+        ));
     }
 
     public List<User> getFriends(Long id) {
@@ -119,5 +136,4 @@ public class UserService {
         }
         return user;
     }
-
 }

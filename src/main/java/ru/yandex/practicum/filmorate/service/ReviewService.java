@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -22,6 +23,7 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final EventService eventService;
 
     public Review getReview(Long id) {
         if (!reviewStorage.existsById(id)) {
@@ -38,7 +40,6 @@ public class ReviewService {
         if (!filmStorage.existsById(filmId)) {
             throw new NotFoundException("Фильм с id " + filmId + " не найден");
         }
-
         return reviewStorage.getReviewsByFilmWithLimit(filmId, count);
     }
 
@@ -62,6 +63,15 @@ public class ReviewService {
 
         Review createdReview = reviewStorage.createReview(review);
         log.info("Создан отзыв: {}", createdReview.getId());
+
+        eventService.createEvent(new Event(
+                null,
+                System.currentTimeMillis(),
+                createdReview.getUserId(),
+                Event.EventType.REVIEW,
+                Event.Operation.ADD,
+                createdReview.getId()
+        ));
         return createdReview;
     }
 
@@ -80,6 +90,15 @@ public class ReviewService {
 
         Review updatedReview = reviewStorage.updateReview(review);
         log.info("Отзыв обновлен: {}", updatedReview.getId());
+
+        eventService.createEvent(new Event(
+                null,
+                System.currentTimeMillis(),
+                updatedReview.getUserId(),
+                Event.EventType.REVIEW,
+                Event.Operation.UPDATE,
+                updatedReview.getId()
+        ));
         return updatedReview;
     }
 
@@ -87,8 +106,18 @@ public class ReviewService {
         if (!reviewStorage.existsById(id)) {
             throw new NotFoundException("Отзыв с id " + id + " не найден");
         }
+        Review review = reviewStorage.getReviewById(id);
         reviewStorage.deleteReViewById(id);
         log.info("Отзыв удален: {}", id);
+
+        eventService.createEvent(new Event(
+                null,
+                System.currentTimeMillis(),
+                review.getUserId(),
+                Event.EventType.REVIEW,
+                Event.Operation.REMOVE,
+                id
+        ));
     }
 
     private void validateReview(Review review) {
@@ -118,6 +147,15 @@ public class ReviewService {
         }
         reviewStorage.addLike(reviewId, userId);
         log.info("Лайк пользователя: {} к отзыву {} добавлен", userId, reviewId);
+
+        eventService.createEvent(new Event(
+                null,
+                System.currentTimeMillis(),
+                userId,
+                Event.EventType.LIKE,
+                Event.Operation.ADD,
+                reviewId
+        ));
     }
 
     public void addDislike(Long reviewId, Long userId) {
@@ -132,6 +170,15 @@ public class ReviewService {
         }
         reviewStorage.addDislike(reviewId, userId);
         log.info("Дизлайк пользователя: {} к отзыву {} добавлен", userId, reviewId);
+
+        eventService.createEvent(new Event(
+                null,
+                System.currentTimeMillis(),
+                userId,
+                Event.EventType.LIKE,
+                Event.Operation.ADD,
+                reviewId
+        ));
     }
 
     public void deleteLike(Long reviewId, Long userId) {
@@ -146,6 +193,15 @@ public class ReviewService {
         }
         reviewStorage.deleteLike(reviewId, userId);
         log.info("Лайк пользователя: {} к отзыву {} удален", userId, reviewId);
+
+        eventService.createEvent(new Event(
+                null,
+                System.currentTimeMillis(),
+                userId,
+                Event.EventType.LIKE,
+                Event.Operation.REMOVE,
+                reviewId
+        ));
     }
 
     public void deleteDislike(Long reviewId, Long userId) {
@@ -160,6 +216,14 @@ public class ReviewService {
         }
         reviewStorage.deleteDislike(reviewId, userId);
         log.info("Дизлайк пользователя: {} к отзыву {} удален", userId, reviewId);
-    }
 
+        eventService.createEvent(new Event(
+                null,
+                System.currentTimeMillis(),
+                userId,
+                Event.EventType.LIKE,
+                Event.Operation.REMOVE,
+                reviewId
+        ));
+    }
 }
