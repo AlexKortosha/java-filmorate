@@ -47,6 +47,7 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         loadGenresForFilms(films);
+        loadDirectorsForFilms(films);
 
         return films;
     }
@@ -202,7 +203,7 @@ public class FilmDbStorage implements FilmStorage {
             whereSql = "WHERE " + String.join(" OR ", conditions);
         }
 
-        String orderSql = "ORDER BY f.film_id";
+        String orderSql = "ORDER BY f.film_id DESC";
 
         String sql = baseSql + "\n" + whereSql + "\n" + orderSql;
 
