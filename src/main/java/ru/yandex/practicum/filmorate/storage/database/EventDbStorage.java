@@ -36,14 +36,7 @@ public class EventDbStorage implements EventStorage {
     public List<Event> findByUserId(Long userId) {
         String sql = "SELECT event_id, timestamp, user_id, event_type, operation, entity_id " +
                 "FROM events " +
-                "WHERE user_id = ? " +
-                "ORDER BY " +
-                "CASE event_type " +
-                "WHEN 'FRIEND' THEN 1 " +
-                "WHEN 'REVIEW' THEN 2 " +
-                "WHEN 'LIKE' THEN 3 " +
-                "END, " +
-                "timestamp ASC, event_id ASC";
+                "WHERE user_id = ?";
         return jdbcTemplate.query(sql, new EventRowMapper(), userId);
     }
 

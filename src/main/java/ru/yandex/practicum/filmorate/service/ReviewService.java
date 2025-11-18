@@ -147,15 +147,6 @@ public class ReviewService {
         }
         reviewStorage.addLike(reviewId, userId);
         log.info("Лайк пользователя: {} к отзыву {} добавлен", userId, reviewId);
-
-        eventService.createEvent(new Event(
-                null,
-                System.currentTimeMillis(),
-                userId,
-                Event.EventType.LIKE,
-                Event.Operation.ADD,
-                reviewId
-        ));
     }
 
     public void addDislike(Long reviewId, Long userId) {
@@ -170,15 +161,6 @@ public class ReviewService {
         }
         reviewStorage.addDislike(reviewId, userId);
         log.info("Дизлайк пользователя: {} к отзыву {} добавлен", userId, reviewId);
-
-        eventService.createEvent(new Event(
-                null,
-                System.currentTimeMillis(),
-                userId,
-                Event.EventType.LIKE,
-                Event.Operation.ADD,
-                reviewId
-        ));
     }
 
     public void deleteLike(Long reviewId, Long userId) {
@@ -193,15 +175,6 @@ public class ReviewService {
         }
         reviewStorage.deleteLike(reviewId, userId);
         log.info("Лайк пользователя: {} к отзыву {} удален", userId, reviewId);
-
-        eventService.createEvent(new Event(
-                null,
-                System.currentTimeMillis(),
-                userId,
-                Event.EventType.LIKE,
-                Event.Operation.REMOVE,
-                reviewId
-        ));
     }
 
     public void deleteDislike(Long reviewId, Long userId) {
@@ -216,14 +189,5 @@ public class ReviewService {
         }
         reviewStorage.deleteDislike(reviewId, userId);
         log.info("Дизлайк пользователя: {} к отзыву {} удален", userId, reviewId);
-
-        eventService.createEvent(new Event(
-                null,
-                System.currentTimeMillis(),
-                userId,
-                Event.EventType.LIKE,
-                Event.Operation.REMOVE,
-                reviewId
-        ));
     }
 }
