@@ -29,7 +29,5 @@ public interface ReviewStorage {
 
     void deleteDislike(Long reviewId, Long userId);
 
-    boolean likeExists(Long reviewId, Long userId);
-
-    boolean dislikeExists(Long reviewId, Long userId);
+    boolean reactionExists(Long reviewId, Long userId, Integer reactionId);
 }
