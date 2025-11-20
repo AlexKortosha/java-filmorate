@@ -223,16 +223,9 @@ public class ReviewDBStorage implements ReviewStorage {
     }
 
     @Override
-    public boolean likeExists(Long reviewId, Long userId) {
-        String sql = "SELECT COUNT(*) FROM review_like WHERE review_id = ? AND user_id = ? AND reaction_id = 1";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, reviewId, userId);
-        return count > 0;
-    }
-
-    @Override
-    public boolean dislikeExists(Long reviewId, Long userId) {
-        String sql = "SELECT COUNT(*) FROM review_like WHERE review_id = ? AND user_id = ? AND reaction_id = 2";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, reviewId, userId);
+    public boolean reactionExists(Long reviewId, Long userId, Integer reactionId) {
+        String sql = "SELECT COUNT(*) FROM review_like WHERE review_id = ? AND user_id = ? AND reaction_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, reviewId, userId, reactionId);
         return count > 0;
     }
 
