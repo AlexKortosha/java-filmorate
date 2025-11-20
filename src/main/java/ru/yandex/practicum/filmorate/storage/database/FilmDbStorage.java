@@ -235,24 +235,37 @@ public class FilmDbStorage implements FilmStorage {
             return Collections.emptyList();
         }
 
-        String getRecommendationFilmsSql = """
-                SELECT f.*,
-                       r.name AS rating_name
-                FROM film f
-                JOIN rating r ON (f.rating_id = r.rating_id)
-                WHERE film_id IN (
-                    SELECT fl.film_id
-                    FROM film_like fl
-                    WHERE fl.user_id = ?
-                        AND fl.film_id NOT IN (
-                            SELECT film_id
-                            FROM film_like
-                            WHERE user_id = ?
-                    )
+        String getRecommendedIdsSql = """
+                (
+                    SELECT film_id
+                    FROM film_like
+                    WHERE user_id = :similarUserId
+                )
+                EXCEPT
+                (
+                    SELECT film_id
+                    FROM film_like
+                    WHERE user_id = :userId
                 )
                 """;
 
-        List<Film> films = jdbcTemplate.query(getRecommendationFilmsSql, filmRowMapper, similarUserId, userId);
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("similarUserId", similarUserId)
+                .addValue("userId", userId);
+
+        List<Long> recommendedIds = namedParameterJdbcTemplate.queryForList(getRecommendedIdsSql, params, Long.class);
+
+        String getFilmsSql = """
+                SELECT f.*, r.name AS rating_name
+                FROM film f
+                JOIN rating r ON f.rating_id = r.rating_id
+                WHERE f.film_id IN (:recommendedIds)
+                """;
+
+        params.addValue("recommendedIds", recommendedIds);
+
+        List<Film> films = namedParameterJdbcTemplate.query(getFilmsSql, params, filmRowMapper);
+
         loadGenresForFilms(films);
         loadDirectorsForFilms(films);
 

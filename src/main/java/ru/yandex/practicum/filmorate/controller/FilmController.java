@@ -67,29 +67,30 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> searchFilms(@RequestParam String query, @RequestParam String by) {
+    public ResponseEntity<List<Film>> searchFilms(@RequestParam String query, @RequestParam String by) {
         log.info("Поиск фильмов. query='{}', by='{}'", query, by);
-        return filmService.search(query, by);
+        return ResponseEntity.ok(filmService.search(query, by));
     }
 
     @GetMapping("/common")
-    public List<Film> getCommonFilms(
+    public ResponseEntity<List<Film>> getCommonFilms(
             @RequestParam int userId,
             @RequestParam int friendId) {
         log.info("Запрос общих фильмов между пользователями {} и {}", userId, friendId);
-        return filmService.getCommonFilms(userId, friendId);
+        return ResponseEntity.ok(filmService.getCommonFilms(userId, friendId));
     }
 
     @GetMapping("/director/{directorId}")
-    public List<Film> getFilmsByDirector(
+    public ResponseEntity<List<Film>> getFilmsByDirector(
             @PathVariable Long directorId,
             @RequestParam(defaultValue = "likes") String sortBy) {
         log.info("Запрос фильмов режиссера с id {} отсортированных по {}", directorId, sortBy);
 
-        return switch (sortBy.toLowerCase()) {
-            case "year" -> filmService.getDirectorFilmsByYears(directorId);
-            case "likes" -> filmService.getDirectorFilmsByLikes(directorId);
-            default -> throw new IllegalArgumentException("Неизвестный порядок сортировки: " + sortBy);
-        };
+        return ResponseEntity.ok(
+                switch (sortBy.toLowerCase()) {
+                    case "year" -> filmService.getDirectorFilmsByYears(directorId);
+                    case "likes" -> filmService.getDirectorFilmsByLikes(directorId);
+                    default -> throw new IllegalArgumentException("Неизвестный порядок сортировки: " + sortBy);
+                });
     }
 }
