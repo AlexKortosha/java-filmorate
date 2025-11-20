@@ -34,7 +34,7 @@ public class UserController {
     }
 
     @PutMapping
-    public  ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
+    public ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
         return ResponseEntity.ok(userService.updateUser(user));
     }
 
@@ -66,7 +66,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public  ResponseEntity<List<User>> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    public ResponseEntity<List<User>> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
         return ResponseEntity.ok(userService.getCommonFriends(id, otherId));
     }
 
