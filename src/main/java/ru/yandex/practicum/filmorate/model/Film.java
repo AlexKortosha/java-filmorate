@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Film.
@@ -27,7 +28,7 @@ public class Film {
 
     private Mpa mpa;
 
-    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+    private Set<Genre> genres = new LinkedHashSet<>();
 
-    private LinkedHashSet<Director> directors = new LinkedHashSet<>();
+    private Set<Director> directors = new LinkedHashSet<>();
 }

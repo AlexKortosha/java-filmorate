@@ -85,12 +85,6 @@ public class FilmController {
             @PathVariable Long directorId,
             @RequestParam(defaultValue = "likes") String sortBy) {
         log.info("Запрос фильмов режиссера с id {} отсортированных по {}", directorId, sortBy);
-
-        return ResponseEntity.ok(
-                switch (sortBy.toLowerCase()) {
-                    case "year" -> filmService.getDirectorFilmsByYears(directorId);
-                    case "likes" -> filmService.getDirectorFilmsByLikes(directorId);
-                    default -> throw new IllegalArgumentException("Неизвестный порядок сортировки: " + sortBy);
-                });
+        return ResponseEntity.ok(filmService.getFilmsByDirector(directorId, sortBy));
     }
 }

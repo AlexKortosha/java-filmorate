@@ -25,11 +25,11 @@ public class ReviewController {
     }
 
     @GetMapping
-    public Collection<Review> getReviews(@RequestParam(required = false) Long filmId, @RequestParam(defaultValue = "10") Integer count) {
+    public ResponseEntity<Collection<Review>> getReviews(@RequestParam(required = false) Long filmId, @RequestParam(defaultValue = "10") Integer count) {
         if (filmId != null) {
-            return reviewService.getReviewsByFilmWithLimit(filmId, count);
+            return ResponseEntity.ok(reviewService.getReviewsByFilmWithLimit(filmId, count));
         } else {
-            return reviewService.getAllReviewsWithLimit(count);
+            return ResponseEntity.ok(reviewService.getAllReviewsWithLimit(count));
         }
 
     }

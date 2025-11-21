@@ -386,7 +386,7 @@ public class FilmDbStorage implements FilmStorage {
     private void updateFilmGenres(Film film) {
         jdbcTemplate.update("DELETE FROM film_genre WHERE film_id = ?", film.getId());
 
-        LinkedHashSet<Genre> genres = film.getGenres();
+        Set<Genre> genres = film.getGenres();
         if (genres != null && !genres.isEmpty()) {
             jdbcTemplate.batchUpdate(
                     "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)",
@@ -403,7 +403,7 @@ public class FilmDbStorage implements FilmStorage {
     private void updateFilmDirector(Film film) {
         jdbcTemplate.update("DELETE FROM film_director WHERE film_id = ?", film.getId());
 
-        LinkedHashSet<Director> directors = film.getDirectors();
+        Set<Director> directors = film.getDirectors();
         if (directors != null && !directors.isEmpty()) {
             jdbcTemplate.batchUpdate(
                     "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)",
