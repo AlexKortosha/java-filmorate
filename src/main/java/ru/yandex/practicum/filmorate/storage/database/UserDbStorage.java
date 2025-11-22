@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -82,6 +83,15 @@ public class UserDbStorage implements UserStorage {
                 user.getId());
 
         return user;
+    }
+
+    @Override
+    public void delete(Long id) {
+
+        int deleted = jdbcTemplate.update("DELETE FROM users WHERE user_id = ?", id);
+        if (deleted == 0) {
+            throw new NotFoundException("Фильм с id= " + id + " не найден");
+        }
     }
 
     @Override
@@ -173,6 +183,13 @@ public class UserDbStorage implements UserStorage {
         });
 
         return allFriends;
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return count > 0;
     }
 
 }

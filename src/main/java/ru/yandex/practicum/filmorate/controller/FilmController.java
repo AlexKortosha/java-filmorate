@@ -36,6 +36,12 @@ public class FilmController {
         return ResponseEntity.ok(updated);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Film> deleteFilm(@PathVariable Long id) {
+        Film deleted = filmService.deleteFilmById(id);
+        return ResponseEntity.ok(deleted);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Film> getFilm(@PathVariable Long id) {
         return ResponseEntity.ok(filmService.getFilm(id));
@@ -54,7 +60,31 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public ResponseEntity<List<Film>> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
-        return ResponseEntity.ok(filmService.getMostPopularFilms(count));
+    public ResponseEntity<List<Film>> getPopularFilms(@RequestParam(defaultValue = "10") int count,
+                                                      @RequestParam(required = false) Integer genreId,
+                                                      @RequestParam(required = false) Integer year) {
+        return ResponseEntity.ok(filmService.getMostPopularFilms(count, genreId, year));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Film>> searchFilms(@RequestParam String query, @RequestParam String by) {
+        log.info("Поиск фильмов. query='{}', by='{}'", query, by);
+        return ResponseEntity.ok(filmService.search(query, by));
+    }
+
+    @GetMapping("/common")
+    public ResponseEntity<List<Film>> getCommonFilms(
+            @RequestParam int userId,
+            @RequestParam int friendId) {
+        log.info("Запрос общих фильмов между пользователями {} и {}", userId, friendId);
+        return ResponseEntity.ok(filmService.getCommonFilms(userId, friendId));
+    }
+
+    @GetMapping("/director/{directorId}")
+    public ResponseEntity<List<Film>> getFilmsByDirector(
+            @PathVariable Long directorId,
+            @RequestParam(defaultValue = "likes") String sortBy) {
+        log.info("Запрос фильмов режиссера с id {} отсортированных по {}", directorId, sortBy);
+        return ResponseEntity.ok(filmService.getFilmsByDirector(directorId, sortBy));
     }
 }

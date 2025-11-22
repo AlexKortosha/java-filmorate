@@ -15,6 +15,8 @@ public interface UserStorage {
 
     User update(User user);
 
+    void delete(Long id);
+
     User getById(Long id);
 
     Optional<User> findUserById(int id);
@@ -28,4 +30,6 @@ public interface UserStorage {
     Set<Long> getUserFriends(Long userId);
 
     List<User> getCommonFriends(Long userId1, Long userId2);
+
+    boolean existsById(Long id);
 }
